@@ -224,7 +224,7 @@ class Game:
         if self.zoom >= 3 and self.overlay == "LEVEL":
             self.message = "Switch to GRAIN (G) before shooting."
             return
-            self._save_undo()
+        self._save_undo()
 
         start = (self.x, self.y)
         club = self.club
@@ -235,7 +235,7 @@ class Game:
         else:
             self._full_shot()
 
-        self.record_shot(start, club, power)
+        self.record_shot(start, club, power)   
         if self.phase == "PLAY":
             self.angle = aim_at_cup(self.x, self.y, self.hole)
             if self.near_green():
@@ -282,16 +282,16 @@ class Game:
         _, ball_roll = BALLS[self.ball_type]
         p = self.power / 100
         difficulty_factor = {
-            "Easy": 0.5,
-            "Normal": 1.0,
-            "Hard": 1.5
-        }
-
+                    "Easy": 0.5,
+                    "Normal": 1.0,
+                    "Hard": 1.5
+                }
+        
         deviation = self.rng.gauss(
-            0,
-            spread * accuracy * (.45 + .55 * p)
-            * difficulty_factor[self.difficulty]
-        )
+                    0,
+                    spread * accuracy * (.45 + .55 * p)
+                    * difficulty_factor[self.difficulty]
+                )
         theta = math.radians(self.angle + deviation)
         dx, dy = math.sin(theta), math.cos(theta)
         carry = self.baseline_carry() * self.rng.uniform(.97, 1.03)
@@ -321,10 +321,10 @@ class Game:
             landed = (bx, by)
         self.x, self.y = landed
         print(
-    f"\nDEBUG: start={start}, landed={landed}, "
-    f"carry={carry}, blocked={blocked}",
-    flush=True
-)
+            f"\nDEBUG: start={start}, landed={landed}, "
+            f"carry={carry}, blocked={blocked}",
+            flush=True
+        )
         self.strokes += 1
         typ = terrain(h, self.x, self.y)
         if typ in ("WATER", "OB"):
@@ -515,102 +515,75 @@ class Game:
 
     
     def show_shot_history(self):
-        history = getattr(self, "shot_history", [])
-
-        if not history:
-            self.message = "No shot history yet."
-            return
-
-        recent = history[-5:]
-        self.message = "Shot History: " + " | ".join(
-            str(shot) for shot in recent
-        )
+            history = getattr(self, "shot_history", [])
+    
+            if not history:
+                self.message = "No shot history yet."
+                return
+    
+            recent = history[-5:]
+            self.message = "Shot History: " + " | ".join(
+                str(shot) for shot in recent
+            )
 
     def command(self, key):
         if key == "SPACE":
-            self.hit()
-            return
-
+                    self.hit()
+                    return
+        
         if key == "H":
-            self.show_shot_history()
-            return
-
+                    self.show_shot_history()
+                    return
+        
         if self.phase == "COMPLETE":
             return
-
+        
         if key == "N":
             self.advance()
             return
-    
-        if self.phase == "COMPLETE":
-            return
-
-
+        
         if self.phase == "FINISHED":
             if key == "U" and self.debug:
                 self.undo()
             return
-
+        
         if key in ("LEFT", "RIGHT", "S-LEFT", "S-RIGHT"):
             step = 5 if key.startswith("S-") else 1
-            self.angle = (
-                self.angle + (-step if key.endswith("LEFT") else step)
-            ) % 360
-            if self.phase == "COMPLETE":
-                return
-            if key == "N":
-                self.advance()
-                return
-            if self.phase == "FINISHED":
-                    if key == "U" and self.debug:
-                        self.undo()
-                        return
-                    if key in ("LEFT", "RIGHT", "S-LEFT", "S-RIGHT"):
-                        step = 5 if key.startswith("S-") else 1
-                        self.angle = (self.angle + (-step if key.endswith("LEFT") else step)) % 360
-            elif key in ("UP", "DOWN", "S-UP", "S-DOWN"):
-                step = 5 if key.startswith("S-") else 1
-                self.power = int(clamp(self.power + (step if key.endswith("UP") else -step), 5, 100))
-            elif key in ("A", "D"):
-                self.angle = (self.angle + (-5 if key == "A" else 5)) % 360
-            elif key in ("W", "S"):
-                self.power = int(clamp(self.power + (5 if key == "W" else -5), 5, 100))
-            elif key == "C":
-             self.club_cycle()
-            elif key == "SPACE":
-             self.message = "SPACE key detected!"
-             self.hit()
-             
+            self.angle = (self.angle + (-step if key.endswith("LEFT") else step)) % 360
+        elif key in ("UP", "DOWN", "S-UP", "S-DOWN"):
+            step = 5 if key.startswith("S-") else 1
+            self.power = int(clamp(self.power + (step if key.endswith("UP") else -step), 5, 100))
+        elif key in ("A", "D"):
+            self.angle = (self.angle + (-5 if key == "A" else 5)) % 360
+        elif key in ("W", "S"):
+            self.power = int(clamp(self.power + (5 if key == "W" else -5), 5, 100))
+        elif key == "C":
+            self.club_cycle()
+        elif key == "SPACE":
+            self.hit()
+
         elif key == "Z":
             self.zoom = min(4, self.zoom + 1)
         elif key == "X":
             self.zoom = max(0, self.zoom - 1)
         elif key == "L" and self.zoom >= 3:
-         self.overlay = "LEVEL" if self.overlay == "GRAIN" else "GRAIN"
-        elif key == "G":
-         self.overlay = "GRAIN"
+            self.overlay = "LEVEL" if self.overlay == "GRAIN" else "GRAIN"
         elif key == "G":
             self.overlay = "GRAIN"
         elif key == "U" and self.debug:
             self.undo()
         elif key == "E" and self.debug:
             options = list(GEAR)
-            self.gear = options[
-                (options.index(self.gear) + 1) % len(options)
-            ]
+            self.gear = options[(options.index(self.gear) + 1) % len(options)]
             self.message = f"DEBUG: gear set to {self.gear}"
         elif key == "B" and self.debug:
             options = list(BALLS)
-            self.ball_type = options[
-                (options.index(self.ball_type) + 1) % len(options)
-            ]
+            self.ball_type = options[(options.index(self.ball_type) + 1) % len(options)]
             self.message = f"DEBUG: ball set to {self.ball_type}"
 
 
 def decode_key(sequence, shift=False):
     """Translate classic Windows special keys and ANSI CSI arrows to commands."""
-    if sequence == " ":
-        return "SPACE"
     if sequence in ("\x00K", "\xe0K"):
         return "S-LEFT" if shift else "LEFT"
     if sequence in ("\x00M", "\xe0M"):
@@ -670,12 +643,10 @@ def read_key():
                 raw += os.read(fd, 1).decode("utf-8", "ignore")
                 if raw.startswith("\x1b[") and raw[-1:] in "ABCD":
                     break
-        key = decode_key(raw)
-        print(f"DEBUG: raw={raw!r}, key={key!r}", flush=True)
-        return key
+        return decode_key(raw)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
-    
+
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="ASCII GOLF v0.2")
@@ -692,23 +663,24 @@ def main(argv=None):
         print(f"Tip: enlarge terminal to at least {min_width} columns x {min_height} rows ")
         print("for a complete HUD. The game remains playable in a smaller terminal.")
         print("=== SELECT DIFFICULTY ===")
-    print("1. Easy")
-    print("2. Normal")
-    print("3. Hard")
-
-    choice = input("Choose (1-3): ")
-
-    difficulty = {
-        "1": "Easy",
-        "2": "Normal",
-        "3": "Hard"
-    }.get(choice, "Normal")
-
+        print("1. Easy")
+        print("2. Normal")
+        print("3. Hard")
+        
+        choice = input("Choose (1-3): ")
+        
+        difficulty = {
+                "1": "Easy",
+                "2": "Normal",
+                "3": "Hard"
+            }.get(choice, "Normal")
+        
     game = Game(
-        seed=args.seed,
-        debug=args.debug,
-        difficulty=difficulty
-    )
+            seed=args.seed,
+            debug=args.debug,
+            difficulty=difficulty
+        )
+    
     try:
         while True:
             print("\x1b[2J\x1b[H" + game.render(), flush=True)
