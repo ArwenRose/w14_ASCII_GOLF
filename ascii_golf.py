@@ -506,6 +506,7 @@ class Game:
         lines += [
             " Arrows +/-1deg or +/-1% | Shift+Arrows (or WASD) +/-5 | C club | SPACE hit",
             " Z zoom in | X zoom out | L level | G grain | N next | Q quit",
+            " H shot history | T statistics",
         ]
         if self.debug:
             lines.append(" [DEBUG] U undo last shot | E gear | B ball "
@@ -526,6 +527,25 @@ class Game:
                 str(shot) for shot in recent
             )
 
+    def show_statistics(self):
+        if not self.shot_history:
+            self.message = "No statistics yet."
+            return
+
+        distances = [
+            shot["distance"] for shot in self.shot_history
+        ]
+
+        total = len(distances)
+        average = sum(distances) / total
+        longest = max(distances)
+
+        self.message = (
+            f"STATISTICS | Total Shots: {total} "
+            f"| Average: {average:.1f}yd "
+            f"| Longest: {longest:.1f}yd"
+        )       
+
     def command(self, key):
         if key == "SPACE":
                     self.hit()
@@ -535,6 +555,10 @@ class Game:
                     self.show_shot_history()
                     return
         
+        if key == "T":
+            self.show_statistics()
+            return
+            
         if self.phase == "COMPLETE":
             return
         
